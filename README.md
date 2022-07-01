@@ -6,8 +6,8 @@ Streaming service with the use of [TON Payment Channels](https://github.com/ton-
 
 | dir               | description                           | 
 | ----------------- | ------------------------------------- |
-| [`front`](/front/)|  c2c (client-to-client) front-end     |
-| [`turn`](/turn/)  |  simple STUN/TURN server for WebRTC   |
+| [`front-end`](/front-end/)|  c2c (client-to-client) front-end     |
+| [`turn-server`](/turn-server/)  |  simple STUN/TURN server for WebRTC   |
     
 
 
