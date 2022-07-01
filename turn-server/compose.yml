@@ -2,13 +2,38 @@ version: "3.9"
 
 services:
   app:
+    restart: always
     container_name: turn-server
     hostname: turn-server
     build:
       dockerfile: Dockerfile
       context: .
       target: prod
+    expose:
+      - ${PORT} # port from .env file
     env_file:
       - .env
+    networks:
+      - net_1
+
+  nginx:
+    restart: always
+    container_name: nginx-server
+    hostname: nginx-server
+    image: nginx:latest
     ports:
-      - "${PORT}:${PORT}"
+      - "5555:5555"
+    env_file:
+      - .env
+    environment:
+      - NGINX_PORT=${PORT}
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+    networks:
+      - net_1
+
+networks:
+  net_1: 
+    driver: bridge
