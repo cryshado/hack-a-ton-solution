@@ -7,6 +7,6 @@ RUN go mod download && go mod verify
 
 COPY . .
 
-RUN go build main.go -o main
+RUN go build -o main main.go
 
 CMD [ "./main" ]
