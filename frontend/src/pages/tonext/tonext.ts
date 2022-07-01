@@ -18,7 +18,11 @@ class TonExt {
         return await this._win.ton.send('ton_getBalance')
     }
 
-    public async sendTransaction(amountNano: number, address: string, b64Boc?: string): Promise<void> {
+    public async sendTransaction(
+        amountNano: number, 
+        address: string, 
+        b64Boc?: string
+    ): Promise<void> {
         let data: { value: number, to: string, dataType?: 'boc', boc?: string } = {
             value: amountNano,
             to: address
