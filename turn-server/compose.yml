@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  app:
+    container_name: turn-server
+    hostname: turn-server
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: prod
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:${PORT}"
