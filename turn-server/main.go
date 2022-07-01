@@ -32,8 +32,8 @@ func main() {
 	config.Configure()
 
 	hostPort := fmt.Sprintf("%s:%s", config.CFG.Host, strconv.Itoa(config.CFG.Port))
-	logrus.Infof("public-ip:	%s", config.CFG.PublicIP)
-	logrus.Infof("host:port:	%s", hostPort)
+	logrus.Infof("public-ip: %s", config.CFG.PublicIP)
+	logrus.Infof("host:port: %s", hostPort)
 
 	udpLstnr, err := net.ListenPacket("udp4", hostPort)
 
