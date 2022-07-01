@@ -1,6 +1,6 @@
 # hack-a-ton-solution
 
-Streaming service with the use of [TON Payment Channels](https://github.com/ton-blockchain/payment-channels/blob/master/func/async-channel.func) 
+Streaming service with the use of [TON Payment Channels](https://github.com/ton-blockchain/payment-channels) 
 
 ## Main goal
 
