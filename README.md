@@ -10,11 +10,11 @@ TON Blockchain, thanks to fast and cheap transactions, allows you to open paymen
 
 ## Structure
 
-| dir                               | description                           | 
-| --------------------------------- | ------------------------------------- |
-| [`backend`](/backend/)            |  service back-end                     |
-| [`frontend`](/frontend/)          |  c2c (client-to-client) front-end     |
-| [`turn-server`](/turn-server/)    |  mini TURN server for WebRTC          |
+| dir                               | description                   | 
+| --------------------------------- | ----------------------------- |
+| [`backend`](/backend/)            |  service back-end             |
+| [`frontend`](/frontend/)          |  service front-end            |
+| [`turn-server`](/turn-server/)    |  mini TURN server for WebRTC  |
     
 
 ## Applicants
