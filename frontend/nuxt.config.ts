@@ -1,4 +1,6 @@
 import { defineNuxtConfig } from 'nuxt'
+import { Buffer } from 'buffer'
+import inject from '@rollup/plugin-inject'
 
 const lifecycle = process.env.npm_lifecycle_event
 const transpile = lifecycle === 'build' || lifecycle === 'generate'
@@ -6,6 +8,21 @@ const transpile = lifecycle === 'build' || lifecycle === 'generate'
     : []
 
 export default defineNuxtConfig({
+    srcDir: './src',
+    vite: {
+        plugins: [
+            inject({ Buffer: [ 'buffer', 'Buffer' ] })
+        ],
+        define: {
+            'process.env.NODE_DEBUG': JSON.stringify(''),
+            'process.browser': true
+        },
+        optimizeDeps: {
+            include: [
+                'buffer'
+            ]
+        }
+    },
     meta: {
         title: 'TON Payments',
         meta: [

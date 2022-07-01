@@ -10,6 +10,7 @@ import (
 	"turn-server/config"
 	_ "turn-server/log"
 
+	"github.com/pion/logging"
 	"github.com/pion/turn/v2"
 	"github.com/sirupsen/logrus"
 )
@@ -52,6 +53,7 @@ func main() {
 				},
 			},
 		},
+		LoggerFactory: logging.NewDefaultLoggerFactory(),
 	})
 
 	if err != nil {
