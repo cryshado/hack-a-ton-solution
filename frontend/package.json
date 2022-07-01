@@ -1,12 +1,8 @@
 {
-  "name": "element-plus-nuxt-starter",
+  "name": "hackaton-payments-frontend",
   "version": "0.1.0",
-  "description": "Element Plus with Nuxt 3 Minimal Starter",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/element-plus/element-plus-nuxt-starter"
-  },
-  "author": "Element Plus Team",
+  "description": "hackaton-payments-frontend",
+  "author": "TonStack",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -18,12 +14,17 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^1.1.4",
+    "buffer": "^6.0.3",
     "element-plus": "^2.2.0",
     "pinia": "^2.0.14",
-    "vue": "^3.2.33"
+    "tonweb": "^0.0.50",
+    "vue": "^3.2.33",
+    "ws": "^8.8.0"
   },
   "devDependencies": {
     "@pinia/nuxt": "^0.1.9",
+    "@rollup/plugin-inject": "^4.0.4",
+    "@types/ws": "^8.5.3",
     "@unocss/nuxt": "^0.33.2",
     "@vueuse/nuxt": "^8.4.2",
     "nuxt": "^3.0.0-rc.3",
