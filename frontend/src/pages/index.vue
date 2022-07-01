@@ -44,10 +44,13 @@
         User
     } from '@element-plus/icons-vue'
 
-    onMounted(() => {
-        const addr = new TonWeb.Address('addr_here')
+    import { TonExt } from './tonext'
 
-        console.log('addr', addr)
+    onMounted(async () => {
+        const tonext = new TonExt(window)
+        await tonext.init()
+
+        console.log('addr.toString()', tonext.address.toString())
 
         const ws = new WebSocket('ws://localhost:4000');
 
