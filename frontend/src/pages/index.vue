@@ -198,6 +198,7 @@
 
             if (seqno !== null && seqno !== undefined) {
                 if (seqno > initSeqno) { 
+                    await sleep(5000)
                     return seqno; 
                 }
             }
@@ -245,121 +246,6 @@
         const walletB = tonweb.wallet.create({ publicKey: bobKeyPair.publicKey })
         const walletAddressBob = await walletB.getAddress()
         console.log('walletAddressBob:      ', walletAddressBob.toString(true, true, true))
-
-        const channelInitState = {
-            balanceA: toNano(aliceAmount),  // Next A will need to make a top-up for this amount
-            balanceB: toNano('0'),          // Streamer does not pay
-            seqnoA: new BN(0),
-            seqnoB: new BN(0)
-        }
-
-        const newTsChannelId = ~~(Date.now() / 1000)
-        console.log('channelId: ', newTsChannelId)
-
-        const channelConfig = {
-            channelId: new BN(newTsChannelId),
-            addressA: walletAddressAlice,
-            addressB: walletAddressBob,
-            initBalanceA: channelInitState.balanceA,
-            initBalanceB: channelInitState.balanceB
-        }
-
-        // создаем канал на стороне юзера (алиса)
-        const channelA = tonweb.payments.createChannel({
-            ...channelConfig,
-            isA: true,
-            myKeyPair: aliceKeyPair,
-            hisPublicKey: bobKeyPair.publicKey,
-        })
-
-        const channelAddressFromAlice = await channelA.getAddress()
-        console.log('channelAddressFromAlice:   ', channelAddressFromAlice.toString(true, true, true))
-
-        // такой же канал создается на стороне стримера
-        const channelB = tonweb.payments.createChannel({
-            ...channelConfig,
-            isA: false,
-            myKeyPair: bobKeyPair,
-            hisPublicKey: aliceKeyPair.publicKey,
-        })
-
-        const channelAddressFromBob = await channelA.getAddress()
-        console.log('channelAddressFromBob:     ', channelAddressFromBob.toString(true, true, true))
-
-        // сторона, которая в зоне риска(получила данные конфигурации)
-        // должна из них составить канал и сопоставить адрес
-        if (channelAddressFromBob.toString() !== channelAddressFromAlice.toString()) {
-            throw new Error('invalid сhannels addresses')
-        }
-
-        // создадим некие объект из каналов и кошельков на каждой из сторон
-        // напомню, что все еще не было никаких операций с блокчейном - живем спокйоно
-
-        const fromWalletA = channelA.fromWallet({
-            wallet: walletA,
-            secretKey: aliceKeyPair.secretKey
-        })
-
-        const fromWalletB = channelB.fromWallet({
-            wallet: walletB,
-            secretKey: bobKeyPair.secretKey
-        })
-
-        // теперь мы хотим, чтобы пользоватиль первым открыл платёжный канал,
-        // то есть Alice, потому что мы не хотим, чтобы стример тратил бабки на канал,
-        // если юзер скажет ему идти гулять
-
-        //
-        // запомним seqno кошелька A
-        // тут будет null если кошелек не задеплоен, ничего страшного
-        // по хорошему еще чекать что у нас достаточно баланса на кошельке
-        //
-
-        console.log(' -------- Alice DEPLOY -------- ')
-
-        const beforeDeloySeqno = await getSeqno(walletA)
-        console.log('beforeDeloySeqno: ', beforeDeloySeqno)
-
-        const lsAdepResp = await fromWalletA.deploy().send(toNano('0.05'))
-        console.log('lsAdepResp: ', lsAdepResp)
-    
-        const afterDeploySeqno = await waitForSeqno(beforeDeloySeqno, walletA)
-        console.log('afterDeploySeqno: ', afterDeploySeqno)
-
-        // теперь мы имеем "задеплоенный" контракт канала
-        // баунс с exit_code 9 - это норм
-
-        // тепрь юзеру (то есть Alice) надо пополнить контракт
-
-        console.log(' -------- Alice TOP UP -------- ')
-        const beforeTopUpSeqno = await getSeqno(walletA)
-        console.log('beforeTopUpSeqno: ', beforeTopUpSeqno)
-        const lsAdepTopUpResp = await fromWalletA
-            .topUp({coinsA: channelInitState.balanceA, coinsB: new BN(0)})
-            .send(channelInitState.balanceA.add(toNano('0.05')))
-
-        console.log('lsAdepTopUpResp: ', lsAdepTopUpResp)
-        const afterTopUpSeqno = await waitForSeqno(beforeTopUpSeqno, walletA)
-        console.log('afterTopUpSeqno: ', afterTopUpSeqno)
-
-        // теперь мы нам нужно инициализировать канал
-        // сделать это можно с любого кошелька, но мы также будем
-        // это делать с кошелькаю зера
-
-        console.log(' -------- Alice INIT -------- ')
-
-        const beforeInitSeqno = await getSeqno(walletA)
-        console.log('beforeInitSeqno: ', beforeInitSeqno)
-        const lsInitResp = await fromWalletA.init(channelInitState).send(toNano('0.05'))
-        console.log('lsInitResp: ', lsInitResp)
-
-        const afterInitSeqno = await waitForSeqno(beforeInitSeqno, walletA)
-        console.log('afterInitSeqno: ', afterInitSeqno)
-
-        // если все хорошо, то что мы теперь имеем:
-        // - активный платёжный канал с балансом на стороне юзера (Alice)
-
-        // тепреь мы можем делать OFFCHAIN переводы - ура
     })
 </script>
 
