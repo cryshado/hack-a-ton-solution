@@ -9,27 +9,29 @@ services:
       dockerfile: Dockerfile
       context: .
       target: prod
-    expose:
-      - "${PORT}/udp" # port from .env file
+    ports:
+      - "${PORT}:${PORT}/udp"
+    # expose:
+    #   - "${PORT}/udp" # port from .env file
     env_file:
       - .env
-    networks:
-      - net_1
+    # networks:
+    #   - net_1
 
-  nginx:
-    restart: always
-    container_name: nginx-server
-    hostname: nginx-server
-    image: nginx:latest
-    ports:
-      - "5555:5555/udp"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - app
-    networks:
-      - net_1
+#   nginx:
+#     restart: always
+#     container_name: nginx-server
+#     hostname: nginx-server
+#     image: nginx:latest
+#     ports:
+#       - "5555:5555/udp"
+#     volumes:
+#       - ./nginx.conf:/etc/nginx/nginx.conf
+#     depends_on:
+#       - app
+#     networks:
+#       - net_1
 
-networks:
-  net_1: 
-    driver: bridge
+# networks:
+#   net_1: 
+#     driver: bridge
