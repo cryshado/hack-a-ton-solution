@@ -92,6 +92,7 @@
         publicKey: Uint8Array;
         secretKey: Uint8Array;
     }
+
     const $player = ref<HTMLVideoElement | null>(null)
     const peer = ref<RTCPeerConnection| null>(null)
     const ws = new WebSocket('ws://localhost:4000')
@@ -102,49 +103,11 @@
             secretKey: new Uint8Array(64)
         }
     }
+
     ws.addEventListener('open', () => {
         console.log('ws opened!')
     })
 
-    onMounted(async () => {
-        const tonext = new TonExt(window)
-        await tonext.init()
-
-        console.log('addr.toString()', tonext.address.toString())
-
-        // A (Alice)    - user
-        // B (Bob)      - streamer
-
-        // how much alice is willing to spend on the streamer 
-        const aliceAmount = '2.5' // in TON
-        const bobAddress = new Address('EQD85CtgkwdmFF-0lAyPFbzk0yaM48PmXOiJ42sEtIW_hI8H')
-
-        const channelInitState = {
-            balanceA: toNano(aliceAmount),  // Next A will need to make a top-up for this amount
-            balanceB: toNano('0'),          // Streamer does not pay
-            seqnoA: new BN(0),
-            seqnoB: new BN(0)
-        }
-
-
-        // получить гет методом публичный ключ кошелька Alice
-        const alicePub = new Uint8Array(32)
-        console.log(alicePub.length)
-
-        const smcA = new Payments.PaymentChannel(provider, {
-            isA: true, // Alice will open 
-            channelId: new BN(1234),
-            myKeyPair: pubToPair(alicePub),
-            hisPublicKey: pubToPair(new Uint8Array(32)),
-            initBalanceA: channelInitState.balanceA,
-            initBalanceB: channelInitState.balanceB,
-            addressA: tonext.address,
-            addressB: bobAddress
-        })
-
-        console.log(await smcA.getAddress())
-        // Object.keys(Payments.PaymentChannel()).forEach((prop)=> console.log(prop))
-        const ws = new WebSocket('ws://localhost:4000')
     ws.addEventListener('message', (event) => {
         try {
             const message = JSON.parse(event.data)
@@ -226,8 +189,43 @@
         return peer
     }
 
-    onMounted(() => {
+    onMounted(async () => {
+        const tonext = new TonExt(window)
+        await tonext.init()
 
+        console.log('addr.toString()', tonext.address.toString())
+
+        // A (Alice)    - user
+        // B (Bob)      - streamer
+
+        // how much alice is willing to spend on the streamer 
+        const aliceAmount = '2.5' // in TON
+        const bobAddress = new Address('EQD85CtgkwdmFF-0lAyPFbzk0yaM48PmXOiJ42sEtIW_hI8H')
+
+        const channelInitState = {
+            balanceA: toNano(aliceAmount),  // Next A will need to make a top-up for this amount
+            balanceB: toNano('0'),          // Streamer does not pay
+            seqnoA: new BN(0),
+            seqnoB: new BN(0)
+        }
+
+
+        // получить гет методом публичный ключ кошелька Alice
+        const alicePub = new Uint8Array(32)
+        console.log(alicePub.length)
+
+        const smcA = new Payments.PaymentChannel(provider, {
+            isA: true, // Alice will open 
+            channelId: new BN(1234),
+            myKeyPair: pubToPair(alicePub),
+            hisPublicKey: pubToPair(new Uint8Array(32)),
+            initBalanceA: channelInitState.balanceA,
+            initBalanceB: channelInitState.balanceB,
+            addressA: tonext.address,
+            addressB: bobAddress
+        })
+
+        console.log(await smcA.getAddress())
     })
 </script>
 
