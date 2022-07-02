@@ -29,11 +29,12 @@
 <script setup lang="ts">
     import { onMounted } from '#imports'
     import TonWeb from 'tonweb'
+    import Payments from 'tonweb/src/contract/payments' 
 
     const providerUrl = 'https://testnet.toncenter.com/api/v2/jsonRPC'
     const providerApiKey = 'eb7febb199841f9b20a7f6ca161be09918c71c753d210cb30a46996815d8ca4d'
-
-    const tonweb = new TonWeb(new TonWeb.HttpProvider(providerUrl, { apiKey: providerApiKey }))
+    const provider = new TonWeb.HttpProvider(providerUrl, { apiKey: providerApiKey })
+    const tonweb = new TonWeb(provider)
 
     const toNano = TonWeb.utils.toNano
     const Address = TonWeb.utils.Address
@@ -55,6 +56,18 @@
 
     import { TonExt } from './tonext'
 
+    interface MySignKeyPair {
+        publicKey: Uint8Array;
+        secretKey: Uint8Array;
+    }
+
+    function pubToPair(pub: Uint8Array): MySignKeyPair {
+        return {
+            publicKey: pub,
+            secretKey: new Uint8Array(64)
+        }
+    }
+
     onMounted(async () => {
         const tonext = new TonExt(window)
         await tonext.init()
@@ -75,22 +88,25 @@
             seqnoB: new BN(0)
         }
 
-        const channelConfig = {
-            channelId: new BN(1234), 
-            addressA: tonext.address,
-            addressB: bobAddress,
+
+        // получить гет методом публичный ключ кошелька Alice
+        const alicePub = new Uint8Array(32)
+        console.log(alicePub.length)
+
+        const smcA = new Payments.PaymentChannel(provider, {
+            isA: true, // Alice will open 
+            channelId: new BN(1234),
+            myKeyPair: pubToPair(alicePub),
+            hisPublicKey: pubToPair(new Uint8Array(32)),
             initBalanceA: channelInitState.balanceA,
-            initBalanceB: channelInitState.balanceB
-        }
+            initBalanceB: channelInitState.balanceB,
+            addressA: tonext.address,
+            addressB: bobAddress
+        })
 
-        const channelA = tonweb.payments.createChannel({
-            ...channelConfig,
-            isA: true,
-            myKeyPair: keyPairA,
-            hisPublicKey: keyPairB.publicKey,
-        });
-
-        const ws = new WebSocket('ws://localhost:4000');
+        console.log(await smcA.getAddress())
+        // Object.keys(Payments.PaymentChannel()).forEach((prop)=> console.log(prop))
+        const ws = new WebSocket('ws://localhost:4000')
 
         ws.addEventListener('open', () => {
             ws.send(JSON.stringify({ method: 'subscribe', data: 'test' }))
