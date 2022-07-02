@@ -1,33 +1,59 @@
 <template>
     <el-row justify="center">
-        <el-col :span="6">
+        <el-col :span="12">
             <!-- <el-card> -->
-                <el-row
+                <!-- <el-row
                     class="mb-2"
                     justify="center"
                 >
-                    <el-button
-                        type="primary"
-                        :icon="VideoCamera"
+                    <video
+                        ref="$player"
+                        autoplay
+                    />
+                </el-row> -->
+            <el-carousel
+                :interval="10000"
+                type="card"
+                height="200px"
+                trigger="click"
+            >
+                <el-carousel-item
+                    v-for="item in 6"
+                    :key="item"
+                >
+                    <h3
+                        text="2xl"
+                        justify="center"
                     >
-                        Create Room
-                    </el-button>
-                </el-row>
-                <el-row justify="center">
-                    <el-button
-                        type="primary"
-                        :icon="User"
-                    >
-                        Join Room
-                    </el-button>
-                </el-row>
+                        {{ item }}
+                    </h3>
+                </el-carousel-item>
+            </el-carousel>
+            <el-row
+                class="mt-6"
+                justify="center"
+            >
+                <el-button
+                    type="primary"
+                    :icon="VideoCamera"
+                    @click="broadcast"
+                >
+                    Become a Streamer
+                </el-button>
+                <el-button
+                    :icon="VideoPlay"
+                    @click="connect"
+                >
+                    View Content
+                </el-button>
+            </el-row>
             <!-- </el-card> -->
         </el-col>
     </el-row>
 </template>
 
 <script setup lang="ts">
-    import { onMounted } from '#imports'
+    import { onMounted, ref } from '#imports'
     import TonWeb from 'tonweb'
     import Payments from 'tonweb/src/contract/payments' 
 
@@ -46,20 +72,29 @@
         ElCard,
         ElForm,
         ElButton,
-        ElIcon
+        ElIcon,
+        ElCarousel,
+        ElCarouselItem
     } from 'element-plus'
 
     import {
         VideoCamera,
-        User
+        VideoPlay
     } from '@element-plus/icons-vue'
 
     import { TonExt } from './tonext'
+    import {
+        userSignedIn,
+        userDialogToggle
+    } from '@/composables/signin'
 
     interface MySignKeyPair {
         publicKey: Uint8Array;
         secretKey: Uint8Array;
     }
+    const $player = ref<HTMLVideoElement | null>(null)
+    const peer = ref<RTCPeerConnection| null>(null)
+    const ws = new WebSocket('ws://localhost:4000')
 
     function pubToPair(pub: Uint8Array): MySignKeyPair {
         return {
@@ -67,6 +102,9 @@
             secretKey: new Uint8Array(64)
         }
     }
+    ws.addEventListener('open', () => {
+        console.log('ws opened!')
+    })
 
     onMounted(async () => {
         const tonext = new TonExt(window)
@@ -107,13 +145,106 @@
         console.log(await smcA.getAddress())
         // Object.keys(Payments.PaymentChannel()).forEach((prop)=> console.log(prop))
         const ws = new WebSocket('ws://localhost:4000')
+    ws.addEventListener('message', (event) => {
+        try {
+            const message = JSON.parse(event.data)
+            const { method, data } = message
 
-        ws.addEventListener('open', () => {
-            ws.send(JSON.stringify({ method: 'subscribe', data: 'test' }))
-        })
 
-        ws.addEventListener('message', (event) => {
+            switch (method) {
+                case 'subscribe':
+                    if (peer.value === null) {
+                        return undefined
+                    }
+
+                    peer.value.setRemoteDescription(new RTCSessionDescription(data))
+                        .catch(e => console.log(e))
+
+                    break
+                default:
+                    console.error('unknown ws method')
+
+                    break
+            }
+
             console.log('received: ', event.data)
+        } catch (err) {
+            console.error('Cant parse ws answer: ', err, event.data)
+        }
+    })
+
+    const connect = () => {
+        if (!userSignedIn.value) return userDialogToggle()
+        if ($player.value === null) return undefined
+        if (ws.readyState !== 1) return undefined
+
+        peer.value = createPeer(true)
+        peer.value.addTransceiver('video', { direction: 'recvonly' })
+    }
+
+    const broadcast = async () => {
+        if (!userSignedIn.value) return userDialogToggle()
+        if ($player.value === null) return undefined
+        if (ws.readyState !== 1) return undefined
+
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+
+        $player.value.srcObject = stream
+        peer.value = createPeer()
+
+        stream.getTracks().forEach(track => peer.value.addTrack(track, stream))
+    } 
+
+    const createPeer = (viewer = false): RTCPeerConnection => {
+        const peer = new RTCPeerConnection({
+            iceServers: [ {
+                urls: 'stun:stun.stunprotocol.org'
+            } ]
         })
+
+        if (viewer) {
+            peer.ontrack = (event) => {
+                if ($player.value === null) return undefined
+
+                $player.value.srcObject = event.streams[0]
+            }
+        }
+
+        peer.onnegotiationneeded = async () => {
+            const offer = await peer.createOffer()
+
+            await peer.setLocalDescription(offer)
+
+            const payload = {
+                method: viewer ? 'subscribe2' : 'subscribe',
+                data: peer.localDescription
+            }
+
+            ws.send(JSON.stringify(payload))
+        }
+
+        return peer
+    }
+
+    onMounted(() => {
+
     })
 </script>
+
+<style scoped>
+    .el-carousel__item h3 {
+        color: #475669;
+        opacity: 0.75;
+        line-height: 200px;
+        margin: 0;
+        text-align: center;
+    }
+
+    .el-carousel__item:nth-child(2n) {
+        background-color: #99a9bf;
+    }
+
+    .el-carousel__item:nth-child(2n + 1) {
+        background-color: #d3dce6;
+    }
+</style>
