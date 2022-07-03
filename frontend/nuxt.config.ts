@@ -9,6 +9,7 @@ const transpile = lifecycle === 'build' || lifecycle === 'generate'
 
 export default defineNuxtConfig({
     srcDir: './src',
+    ssr: false,
     vite: {
         plugins: [
             inject({ Buffer: [ 'buffer', 'Buffer' ] })
