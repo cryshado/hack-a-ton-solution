@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
     import { onMounted, ref } from '#imports'
-    import TonWeb from 'tonweb'
+    import TonWeb from 'tonweb-fix'
     import { generateMnemonic, mnemonicToKeyPair } from 'tonweb-mnemonic'
 
     const providerUrl = 'https://testnet.toncenter.com/api/v2/jsonRPC'
@@ -87,7 +87,7 @@
         userSignedIn,
         userDialogToggle
     } from '@/composables/signin'
-    import { WalletV3ContractR1 } from 'tonweb/dist/types/contract/wallet/v3/wallet-v3-contract-r1'
+    import { WalletV3ContractR1 } from 'tonweb-fix/dist/types/contract/wallet/v3/wallet-v3-contract-r1'
 
     const $player = ref<HTMLVideoElement | null>(null)
     const peer = ref<RTCPeerConnection| null>(null)

@@ -1,4 +1,4 @@
-import TonWeb, { AddressType } from 'tonweb'
+import TonWeb, { AddressType } from 'tonweb-fix'
 
 class TonExt {
     private _win: Window & typeof globalThis
